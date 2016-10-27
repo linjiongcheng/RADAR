@@ -61,6 +61,8 @@ public class Enemy extends AppCompatActivity {
                         Info enemy = new Info();
                         enemy.setName(name.getText().toString());
                         enemy.setTele(tele.getText().toString());
+                        enemy.setLatitude("");
+                        enemy.setLongitude("");
                         infoList1.add(enemy);
                         saveObject("enemies",infoList1);
                         refresh();

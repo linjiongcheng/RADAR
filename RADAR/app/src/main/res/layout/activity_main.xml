@@ -21,7 +21,8 @@
         android:id="@+id/vgp_center"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header">
+        android:layout_below="@id/header"
+        android:layout_above="@+id/vgp_footer">
         <RelativeLayout  android:paddingTop="10dp"
             android:layout_height="360dp"
             android:layout_width="fill_parent"
@@ -39,7 +40,7 @@
             android:paddingTop="10dp"
             android:background="@drawable/centre_radar"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             >
             <Button
                 android:id="@+id/btn_locate"
@@ -49,25 +50,41 @@
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true" />
 
-            <ToggleButton
+            <Button
                 android:id="@+id/btn_refresh"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_refresh_def"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:textOff="" android:textOn="" />
+                android:layout_alignParentRight="true" />
+
+            <Button
+                android:id="@+id/btn_refreshInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_refresh_on"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true" />
+
+            <Button
+                android:id="@+id/btn_deleteInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_refresh_on1"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true" />
+
         </RelativeLayout>
     </FrameLayout>
 
+    <!--<RelativeLayout-->
+        <!--android:id="@+id/empty_filler"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:background="@drawable/list_footer"-->
+        <!--android:layout_height="fill_parent"-->
+        <!--android:layout_below="@id/vgp_center"/>-->
     <RelativeLayout
-        android:id="@+id/empty_filler"
-        android:layout_width="fill_parent"
-        android:background="@drawable/list_footer"
-        android:layout_height="fill_parent"
-        android:layout_below="@id/vgp_center"/>
-    <RelativeLayout
-        android:id="@+id/vgp_footer"
+        android:id="@id/vgp_footer"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/list_footer"
@@ -90,28 +107,4 @@
             android:layout_centerVertical="true" />
 
     </RelativeLayout>
-
-    <!--<RelativeLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent">-->
-        <!--<ImageView-->
-            <!--android:id="@+id/radar_header"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="60dp"-->
-            <!--android:src="@drawable/radar_header"/>-->
-        <!--<ImageView-->
-            <!--android:id="@+id/centre_radar_origina"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="450dp"-->
-            <!--android:layout_below="@id/radar_header"-->
-            <!--android:src="@drawable/centre_radar_original"-->
-            <!--/>-->
-        <!--<ImageView-->
-            <!--android:id="@+id/home_header"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="60dp"-->
-            <!--android:layout_below="@id/centre_radar_origina"-->
-            <!--android:src="@drawable/home_header"/>-->
-    <!--</RelativeLayout>-->
-
 </RelativeLayout>

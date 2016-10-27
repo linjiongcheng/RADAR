@@ -10,12 +10,12 @@
         android:paddingTop="8px">
 
         <Button android:id="@+id/btn_friends_list_add"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_width="70dp" android:layout_height="wrap_content"
             android:background="@drawable/button_friends_list_add_def"
             android:layout_alignParentLeft="true" />
 
         <ToggleButton android:id="@+id/btn_friends_list_edit"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_width="70dp" android:layout_height="wrap_content"
             android:background="@drawable/button_friends_list_edit_def"
             android:layout_alignParentRight="true" android:textOff="" android:textOn=""/>
 

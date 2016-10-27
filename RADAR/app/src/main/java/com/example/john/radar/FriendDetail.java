@@ -29,6 +29,7 @@ public class FriendDetail extends AppCompatActivity {
 
     private Button list;
     private Button radar;
+    private Button enemy;
     private Button delete;
     private Button ok;
     private Button close;
@@ -59,7 +60,7 @@ public class FriendDetail extends AppCompatActivity {
         txt_friend_name.setText(name);
         txt_friend_number.setText(number);
         txt_friend_long_lang.setText(latitude+"/"+longitude);
-
+        //点击按钮返回朋友列表
         list = (Button)findViewById(R.id.btn_friends_list);
         list.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,7 +70,7 @@ public class FriendDetail extends AppCompatActivity {
                 finish();
             }
         });
-
+        //点击按钮返回主界面
         radar = (Button)findViewById(R.id.btn_radar);
         radar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,7 +78,19 @@ public class FriendDetail extends AppCompatActivity {
                 FriendDetail.this.finish();
             }
         });
+        //点击按钮进入敌人列表
+        enemy = (Button)findViewById(R.id.btn_enemies);
+        enemy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(FriendDetail.this,Enemy.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
         infoList = (List<Info>)getObject("friends");
+        //点击删除按钮弹出对话框
         delete = (Button)findViewById(R.id.btn_delete);
         delete.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -31,14 +31,18 @@ import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.model.inner.GeoPoint;
+import com.baidu.mapapi.utils.DistanceUtil;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
     private SmsReceiver smsReceiver;
     private IntentFilter receiveFilter;
     private Button locate;
-    private ToggleButton refresh;
+    private Button refresh;
+    private Button refreshFriend;
+    private Button refreshEnemy;
     private Button friends;
     private Button enemies;
     private BaiduMap mBaiduMap;
@@ -62,9 +68,12 @@ public class MainActivity extends AppCompatActivity {
     public OverlayOptions option;
     public OverlayOptions optionsName;
     public OverlayOptions optionsNum;
+    public OverlayOptions ooPolyline;
+    public OverlayOptions optionsDistance;
     public LatLng Pos;
     public LatLng NamePos;
     public LatLng NumPos;
+    public LatLng middle;
     public Bundle extraMsg;
     boolean isFirstLoc = true;// 是否首次定位
     public BDLocationListener myListener = new BDLocationListener() {
@@ -144,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //刷新按钮，点击发送短信
-        refresh = (ToggleButton)findViewById(R.id.btn_refresh);
+        refresh = (Button)findViewById(R.id.btn_refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,6 +165,31 @@ public class MainActivity extends AppCompatActivity {
                 for(Info x:infoList1){
                     sms.sendTextMessage(x.getTele(), null, "where are you?", pi, null);
                 }
+            }
+        });
+        bitmap = BitmapDescriptorFactory.fromResource(R.drawable.friend_marker);
+        bitmap1 = BitmapDescriptorFactory.fromResource(R.drawable.enemy_marker);
+        //显示朋友和敌人的位置信息
+        refreshFriend = (Button)findViewById(R.id.btn_refreshInfo);
+        refreshFriend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBaiduMap.clear();
+                String flag = "friend";
+                Display display = new Display();
+                mBaiduMap = display.display(mBaiduMap,bitmap,mLocationClient.getLastKnownLocation().getLatitude(),
+                        mLocationClient.getLastKnownLocation().getLongitude(),infoList,flag);
+                flag = "enemy";
+                mBaiduMap = display.display(mBaiduMap,bitmap1,mLocationClient.getLastKnownLocation().getLatitude(),
+                        mLocationClient.getLastKnownLocation().getLongitude(),infoList1,flag);
+            }
+        });
+        //清空覆盖物
+        refreshEnemy = (Button)findViewById(R.id.btn_deleteInfo);
+        refreshEnemy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBaiduMap.clear();
             }
         });
 
@@ -253,13 +287,19 @@ public class MainActivity extends AppCompatActivity {
                 extraMsg = new Bundle();
                 extraMsg.putString("longitude",longitude);
                 extraMsg.putString("latitude",latitude);
+
                 boolean ifFriend = false;
-                for(Info x:infoList){
+
+                for(Iterator<Info> iter = infoList.iterator();iter.hasNext();){
+                    Info x = iter.next();
                     if(mobile.contains(x.getTele())){
                         //获取地点的位置标志图案
                         bitmap = BitmapDescriptorFactory.fromResource(R.drawable.friend_marker);
                         name = x.getName();
                         number = x.getTele();
+                        x.setLatitude(latitude);
+                        x.setLongitude(longitude);
+                        saveObject("friends",infoList);
                         extraMsg.putString("name", name);
                         extraMsg.putString("number", number);
                         option = new MarkerOptions()
@@ -285,13 +325,18 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
+                //如果是敌人
                 if(!ifFriend){
-                    for(Info x:infoList1){
+                    for(Iterator<Info> iter = infoList1.iterator();iter.hasNext();){
+                        Info x = iter.next();
                         if(mobile.contains(x.getTele())){
                             //获取地点的位置标志图案
                             bitmap1 = BitmapDescriptorFactory.fromResource(R.drawable.enemy_marker);
                             name = x.getName();
                             number = x.getTele();
+                            x.setLatitude(latitude);
+                            x.setLongitude(longitude);
+                            saveObject("enemies",infoList1);
                             extraMsg.putString("name", name);
                             extraMsg.putString("number", number);
                             option = new MarkerOptions()

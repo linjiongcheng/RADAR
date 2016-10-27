@@ -61,6 +61,8 @@ public class Friend extends AppCompatActivity {
                         Info friend = new Info();
                         friend.setName(name.getText().toString());
                         friend.setTele(tele.getText().toString());
+                        friend.setLatitude("");
+                        friend.setLongitude("");
                         infoList.add(friend);
                         saveObject("friends",infoList);
                         refresh();
