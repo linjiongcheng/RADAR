@@ -100,9 +100,9 @@ public class EnemyDetail extends AppCompatActivity {
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                 dialog.setContentView(R.layout.dialog_delete);
                 dialog.show();
-                TextView txt_friend_name = (TextView)dialog.findViewById(R.id.txt_enemy_name);
+                TextView txt_friend_name = (TextView)dialog.findViewById(R.id.txt_friend_name);
                 txt_friend_name.setText(name);
-                TextView txt_friend_number = (TextView)dialog.findViewById(R.id.txt_enemy_number);
+                TextView txt_friend_number = (TextView)dialog.findViewById(R.id.txt_friend_number);
                 txt_friend_number.setText(number);
                 ok = (Button)dialog.findViewById(R.id.btn_dialog_ok);
                 ok.setOnClickListener(new View.OnClickListener() {

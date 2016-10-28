@@ -12,9 +12,11 @@ import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ToggleButton;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -34,7 +36,6 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.map.TextOptions;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.model.inner.GeoPoint;
 import com.baidu.mapapi.utils.DistanceUtil;
 
 import java.io.FileInputStream;
@@ -63,16 +64,16 @@ public class MainActivity extends AppCompatActivity {
     private BaiduMap mBaiduMap;
     private BitmapDescriptor bitmap;
     private BitmapDescriptor bitmap1;
+    private BitmapDescriptor bitmap2;
+    private BitmapDescriptor bitmap3;
     MapView mMapView = null;
     public LocationClient mLocationClient = null;
     public OverlayOptions option;
-    public OverlayOptions optionsName;
-    public OverlayOptions optionsNum;
+    public OverlayOptions optionsNameTele;
     public OverlayOptions ooPolyline;
     public OverlayOptions optionsDistance;
+    public LatLng myPos;
     public LatLng Pos;
-    public LatLng NamePos;
-    public LatLng NumPos;
     public LatLng middle;
     public Bundle extraMsg;
     boolean isFirstLoc = true;// 是否首次定位
@@ -165,18 +166,21 @@ public class MainActivity extends AppCompatActivity {
                 for(Info x:infoList1){
                     sms.sendTextMessage(x.getTele(), null, "where are you?", pi, null);
                 }
+                Toast.makeText(MainActivity.this,"刷新 短信已发送",Toast.LENGTH_SHORT).show();
             }
         });
         bitmap = BitmapDescriptorFactory.fromResource(R.drawable.friend_marker);
         bitmap1 = BitmapDescriptorFactory.fromResource(R.drawable.enemy_marker);
+        bitmap2 = BitmapDescriptorFactory.fromResource(R.drawable.u);
         //显示朋友和敌人的位置信息
         refreshFriend = (Button)findViewById(R.id.btn_refreshInfo);
         refreshFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this,"显示朋友（绿色）与敌人（红色）的位置和距离",Toast.LENGTH_SHORT).show();
                 mBaiduMap.clear();
                 String flag = "friend";
-                Display display = new Display();
+                Display display = new Display(MainActivity.this);
                 mBaiduMap = display.display(mBaiduMap,bitmap,mLocationClient.getLastKnownLocation().getLatitude(),
                         mLocationClient.getLastKnownLocation().getLongitude(),infoList,flag);
                 flag = "enemy";
@@ -189,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         refreshEnemy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this,"清除位置",Toast.LENGTH_SHORT).show();
                 mBaiduMap.clear();
             }
         });
@@ -221,13 +226,7 @@ public class MainActivity extends AppCompatActivity {
         mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                Intent intent = null;
-                if(marker.getIcon().equals(bitmap)){
-                    intent = new Intent(MainActivity.this,FriendDetail.class);
-                }
-                else if(marker.getIcon().equals(bitmap1)){
-                    intent = new Intent(MainActivity.this,EnemyDetail.class);
-                }
+                Intent intent = new Intent();
                 String name = marker.getExtraInfo().getString("name");
                 String number = marker.getExtraInfo().getString("number");
                 String longitude = marker.getExtraInfo().getString("longitude");
@@ -236,7 +235,18 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("number",number);
                 intent.putExtra("longitude",longitude);
                 intent.putExtra("latitude",latitude);
-                startActivity(intent);
+                if(marker.getIcon().equals(bitmap2)){
+                    Toast.makeText(MainActivity.this,"陌生人电话号码："+number+"\n位置信息："+latitude+"/"+longitude,Toast.LENGTH_SHORT).show();
+                }else{
+                    if(marker.getIcon().equals(bitmap)){
+                        intent.setClass(MainActivity.this,FriendDetail.class);
+                        startActivity(intent);
+                    }
+                    else if(marker.getIcon().equals(bitmap1)){
+                        intent.setClass(MainActivity.this,EnemyDetail.class);
+                        startActivity(intent);
+                    }
+                }
                 return false;
             }
         });
@@ -260,10 +270,14 @@ public class MainActivity extends AppCompatActivity {
             }
             System.out.println("-----------手机收到新短息----------");
             System.out.println(mobile+" "+content);
+            Toast.makeText(MainActivity.this,"收到"+mobile+"发来的短信:"+content,Toast.LENGTH_SHORT).show();
+            Double myLatitude = mLocationClient.getLastKnownLocation().getLatitude();
+            Double myLongitude = mLocationClient.getLastKnownLocation().getLongitude();
             if(content.equals("where are you?")){
+                Toast.makeText(MainActivity.this,"发送自己的位置信息",Toast.LENGTH_SHORT).show();
                 PendingIntent pi = PendingIntent.getActivity(MainActivity.this, 0, new Intent(), 0);
                 SmsManager sms = SmsManager.getDefault();
-                sms.sendTextMessage(mobile, null, mLocationClient.getLastKnownLocation().getLatitude()+"/"+mLocationClient.getLastKnownLocation().getLongitude(), pi, null);
+                sms.sendTextMessage(mobile, null, myLatitude+"/"+myLongitude, pi, null);
             }
             //判断短信内容格式是否是xxx.xxxx/yyy.yyyyy形式的经纬度
             String REGEX = "^[0-9]+(.[0-9]+)?[//][0-9]+(.[0-9]+)?$";
@@ -273,23 +287,19 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("正确","匹配");
                 String temp[] = content.split("/");
                 String name = "";
-                String number = "";
+                String number = mobile;
                 String latitude = temp[0];
                 String longitude = temp[1];
                 Log.i("检查检查"+latitude,longitude);
-
+                myPos = new LatLng(myLatitude,
+                        myLongitude);
                 //定位到对象的位置
                 Pos = new LatLng(Double.valueOf(latitude),Double.valueOf(longitude));
-                //名字位置
-                NamePos = new LatLng(Double.valueOf(latitude)-0.0001,Double.valueOf(longitude));
-                //电话号码位置
-                NumPos = new LatLng(Double.valueOf(latitude)-0.0011,Double.valueOf(longitude));
                 extraMsg = new Bundle();
                 extraMsg.putString("longitude",longitude);
                 extraMsg.putString("latitude",latitude);
-
+                boolean ifKnow = true;
                 boolean ifFriend = false;
-
                 for(Iterator<Info> iter = infoList.iterator();iter.hasNext();){
                     Info x = iter.next();
                     if(mobile.contains(x.getTele())){
@@ -302,26 +312,49 @@ public class MainActivity extends AppCompatActivity {
                         saveObject("friends",infoList);
                         extraMsg.putString("name", name);
                         extraMsg.putString("number", number);
+                        LayoutInflater factory = LayoutInflater.from(MainActivity.this);
+                        View textEntryView = factory.inflate(R.layout.name_tele, null); ////把视图转换成Bitmap 再转换成Drawable
+                        TextView Name = (TextView)textEntryView.findViewById(R.id.name);
+                        TextView Number = (TextView)textEntryView.findViewById(R.id.tele);
+                        Name.setText(name);
+                        Name.setTextColor(getResources().getColor(R.color.green));
+                        Number.setText(number);
+                        try{
+                            bitmap3 = BitmapDescriptorFactory.fromView(textEntryView);
+                            optionsNameTele = new MarkerOptions()
+                                    .position(Pos)
+                                    .icon(bitmap3)
+                                    .extraInfo(extraMsg);
+                            mBaiduMap.addOverlay(optionsNameTele);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        //显示位置图标
                         option = new MarkerOptions()
                                 .position(Pos)
                                 .icon(bitmap)
                                 .extraInfo(extraMsg);
                         mBaiduMap.addOverlay(option);
-                        optionsName = new TextOptions()
-                                .position(NamePos)
-                                .text(name)
-                                .fontColor(0xFF00FF00)
-                                .fontSize(36)
-                                .typeface(Typeface.DEFAULT_BOLD);
-                        mBaiduMap.addOverlay(optionsName);
-                        optionsNum = new TextOptions()
-                                .position(NumPos)
-                                .text(number)
-                                .fontColor(0xFFFFFFFF)
+                        // 添加直线
+                        List<LatLng> points = new ArrayList<LatLng>();
+                        points.add(myPos);
+                        points.add(Pos);
+                        ooPolyline = new PolylineOptions().width(10)
+                                .color(0xAA00FF00).points(points);
+                        mBaiduMap.addOverlay(ooPolyline);
+                        //计算距离并显示在连线中间位置
+                        Double temp1 = DistanceUtil. getDistance(myPos, Pos);
+                        String distance = String .format("%.2f",temp1)+"m";
+                        middle = new LatLng((myPos.latitude+Pos.latitude)/2,(myPos.longitude+Pos.longitude)/2);
+                        optionsDistance = new TextOptions()
+                                .position(middle)
+                                .text(distance)
+                                .fontColor(0xFF000000)
                                 .fontSize(24)
                                 .typeface(Typeface.DEFAULT_BOLD);
-                        mBaiduMap.addOverlay(optionsNum);
+                        mBaiduMap.addOverlay(optionsDistance);
                         ifFriend = true;
+                        ifKnow = false;
                         break;
                     }
                 }
@@ -339,28 +372,98 @@ public class MainActivity extends AppCompatActivity {
                             saveObject("enemies",infoList1);
                             extraMsg.putString("name", name);
                             extraMsg.putString("number", number);
+                            LayoutInflater factory = LayoutInflater.from(MainActivity.this);
+                            View textEntryView = factory.inflate(R.layout.name_tele, null); ////把视图转换成Bitmap 再转换成Drawable
+                            TextView Name = (TextView)textEntryView.findViewById(R.id.name);
+                            TextView Number = (TextView)textEntryView.findViewById(R.id.tele);
+                            Name.setText(name);
+                            Name.setTextColor(getResources().getColor(R.color.red));
+                            Number.setText(number);
+                            try{
+                                bitmap3 = BitmapDescriptorFactory.fromView(textEntryView);
+                                optionsNameTele = new MarkerOptions()
+                                        .position(Pos)
+                                        .icon(bitmap3)
+                                        .extraInfo(extraMsg);
+                                mBaiduMap.addOverlay(optionsNameTele);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            //显示位置图标
                             option = new MarkerOptions()
                                     .position(Pos)
                                     .icon(bitmap1)
                                     .extraInfo(extraMsg);
                             mBaiduMap.addOverlay(option);
-                            optionsName = new TextOptions()
-                                    .position(NamePos)
-                                    .text(name)
-                                    .fontColor(0xFFFF0000)
-                                    .fontSize(36)
-                                    .typeface(Typeface.DEFAULT_BOLD);
-                            mBaiduMap.addOverlay(optionsName);
-                            optionsNum = new TextOptions()
-                                    .position(NumPos)
-                                    .text(number)
-                                    .fontColor(0xFFFFFFFF)
+                            // 添加直线
+                            List<LatLng> points = new ArrayList<LatLng>();
+                            points.add(myPos);
+                            points.add(Pos);
+                            ooPolyline = new PolylineOptions().width(10)
+                                    .color(0xAAFF0000).points(points);
+                            mBaiduMap.addOverlay(ooPolyline);
+                            //计算距离并显示在连线中间位置
+                            Double temp1 = DistanceUtil. getDistance(myPos, Pos);
+                            String distance = String .format("%.2f",temp1)+"m";
+                            middle = new LatLng((myPos.latitude+Pos.latitude)/2,(myPos.longitude+Pos.longitude)/2);
+                            optionsDistance = new TextOptions()
+                                    .position(middle)
+                                    .text(distance)
+                                    .fontColor(0xFF000000)
                                     .fontSize(24)
                                     .typeface(Typeface.DEFAULT_BOLD);
-                            mBaiduMap.addOverlay(optionsNum);
+                            mBaiduMap.addOverlay(optionsDistance);
+                            ifKnow = false;
                             break;
                         }
                     }
+                }
+                //如果是陌生人
+                if(ifKnow){
+                    extraMsg.putString("name", "陌生人");
+                    extraMsg.putString("number", number);
+                    LayoutInflater factory = LayoutInflater.from(MainActivity.this);
+                    View textEntryView = factory.inflate(R.layout.name_tele, null); ////把视图转换成Bitmap 再转换成Drawable
+                    TextView Name = (TextView)textEntryView.findViewById(R.id.name);
+                    TextView Number = (TextView)textEntryView.findViewById(R.id.tele);
+                    Name.setText("陌生人");
+                    Name.setTextColor(getResources().getColor(R.color.black));
+                    Number.setText(number);
+                    bitmap3 = BitmapDescriptorFactory.fromView(textEntryView);
+                    optionsNameTele = new MarkerOptions()
+                            .position(Pos)
+                            .icon(bitmap3)
+                            .extraInfo(extraMsg);
+                    mBaiduMap.addOverlay(optionsNameTele);
+                    try{
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    //显示位置图标
+                    option = new MarkerOptions()
+                            .position(Pos)
+                            .icon(bitmap2)
+                            .extraInfo(extraMsg);
+                    mBaiduMap.addOverlay(option);
+                    // 添加直线
+                    List<LatLng> points = new ArrayList<LatLng>();
+                    points.add(myPos);
+                    points.add(Pos);
+                    ooPolyline = new PolylineOptions().width(10)
+                            .color(0xAA000000).points(points);
+                    mBaiduMap.addOverlay(ooPolyline);
+                    //计算距离并显示在连线中间位置
+                    Double temp1 = DistanceUtil. getDistance(myPos, Pos);
+                    String distance = String .format("%.2f",temp1)+"m";
+                    middle = new LatLng((myPos.latitude+Pos.latitude)/2,(myPos.longitude+Pos.longitude)/2);
+                    optionsDistance = new TextOptions()
+                            .position(middle)
+                            .text(distance)
+                            .fontColor(0xFF000000)
+                            .fontSize(24)
+                            .typeface(Typeface.DEFAULT_BOLD);
+                    mBaiduMap.addOverlay(optionsDistance);
                 }
             }
         }
