@@ -32,7 +32,7 @@
 			android:layout_alignParentLeft="true" android:textColor="#ec3239"
 			android:paddingTop="3dp" android:paddingLeft="20dp" android:textSize="18dp" />
 
-		<Button android:id="@+id/btn_delete" android:layout_width="wrap_content"
+		<Button android:id="@+id/btn_delete" android:layout_width="60dp"
 			android:layout_height="wrap_content" android:background="@drawable/button_list_delete_def"
 			android:layout_alignParentRight="true" />
 
@@ -40,7 +40,8 @@
 
 	<RelativeLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:background="@drawable/enemy_detail_centre_background"
-		android:paddingRight="10dp" android:paddingTop="10dp" android:layout_below="@id/vgp_enemy_detail" >
+		android:paddingRight="10dp" android:paddingTop="10dp" android:layout_below="@id/vgp_enemy_detail"
+		android:layout_above="@+id/vgp_footer">
 		<TextView android:id="@+id/txt_enemy_number"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
 			android:layout_alignParentRight="true" android:layout_marginTop="4dp"
